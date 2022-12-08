@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+    spec:
+      containers:
+      - name: django-app
+        image:  ahmedkefi/musicapp:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: DATABASE_HOST
+          value: "server743755161.postgres.database.azure.com"
+        - name: DATABASE_USER
+          value: "acidicpolenta4"
+        - name: DATABASE_PASSWORD
+          value: "cVOZMXzffU2y7RUIJ9BEjQ"
+        - name: DATABASE_NAME
+          value: "flexibleserverdb"
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - django-app
+              topologyKey: "kubernetes.io/hostname"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-svc0
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  selector:
+    app: django-app
